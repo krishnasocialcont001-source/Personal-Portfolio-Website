@@ -2,40 +2,52 @@ import { useEffect, useRef, useState } from "react"
 
 export default function MusicPlayer() {
   const audioRef = useRef(null)
+  const userMutedRef = useRef(false)
   const [muted, setMuted] = useState(false)
-  const [started, setStarted] = useState(false)
 
-  // Auto-start on first user interaction anywhere on the page
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.2
-    }
-    const tryPlay = () => {
-      if (!started && audioRef.current) {
-        audioRef.current.play().catch(() => {})
-        setStarted(true)
-      }
-    }
-    document.addEventListener("click", tryPlay, { once: true })
-    document.addEventListener("keydown", tryPlay, { once: true })
-    document.addEventListener("scroll", tryPlay, { once: true })
-    return () => {
-      document.removeEventListener("click", tryPlay)
+    const audio = audioRef.current
+    if (!audio) return
+
+    audio.volume = 0.2
+
+    const cleanup = () => {
+      document.removeEventListener("pointerdown", tryPlay)
       document.removeEventListener("keydown", tryPlay)
-      document.removeEventListener("scroll", tryPlay)
     }
-  }, [started])
+
+    const tryPlay = () => {
+      if (!audioRef.current || userMutedRef.current) {
+        cleanup()
+        return
+      }
+      audioRef.current
+        .play()
+        .then(() => {
+          cleanup()
+        })
+        .catch(() => {})
+    }
+
+    // Attempt autoplay immediately; fall back to first valid user gesture if blocked
+    tryPlay()
+    document.addEventListener("pointerdown", tryPlay)
+    document.addEventListener("keydown", tryPlay)
+
+    return cleanup
+  }, [])
 
   const toggleMute = () => {
-    if (!started && audioRef.current) {
-      audioRef.current.play().catch(() => {})
-      setStarted(true)
+    const nextMuted = !muted
+    userMutedRef.current = nextMuted
+    if (audioRef.current) {
+      audioRef.current.muted = nextMuted
+      if (!nextMuted) {
+        audioRef.current.volume = 0.2
+        audioRef.current.play().catch(() => {})
+      }
     }
-    setMuted((prev) => {
-      const next = !prev
-      audioRef.current.muted = next
-      return next
-    })
+    setMuted(nextMuted)
   }
 
   return (
@@ -55,7 +67,7 @@ export default function MusicPlayer() {
           bg-black/60 border border-rose-500/60 text-rose-400
           hover:bg-rose-500/20 hover:border-rose-400 hover:scale-110
           shadow-[0_0_16px_rgba(244,63,94,0.3)]
-          transition duration-300 backdrop-blur-md"
+          transition duration-300 backdrop-blur-md cursor-pointer"
       >
         {muted ? (
           /* Muted icon */
