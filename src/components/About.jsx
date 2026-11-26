@@ -68,7 +68,7 @@ export default function About() {
             <span className="text-rose-400">React</span>,{" "}
             <span className="text-red-400">Java</span>, and{" "}
             <span className="text-rose-400">Spring Boot</span>.  
-            Alongside development, I also create motorcycle content and love exploring new technologies.
+            Alongside development, I love exploring new technologies.
           </p>
         </motion.div>
 
@@ -82,7 +82,7 @@ export default function About() {
           {[
             { label: "Projects", value: "10+" },
             { label: "Technologies", value: "10+" },
-            { label: "Experience", value: "Fresher" },
+            { label: "Experience", value: "Loading... (2nd Year B.Tech Edition) ⏳" },
             { label: "Focus", value: "Full Stack" },
           ].map((item, i) => (
             <div
